@@ -1,0 +1,13 @@
+node_modules/
+.DS_Store
+*.log
+.idea/
+.vscode/
+
+*.tgz
+.clawhub/
+coverage/
+reports/
+.env
+.env.*
+!.env.example

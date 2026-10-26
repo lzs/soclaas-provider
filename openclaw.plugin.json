@@ -1,0 +1,37 @@
+{
+  "id": "soclaas-provider",
+  "name": "SoCLaaS Provider",
+  "description": "Registers the SoCLaaS OpenAI-compatible gateway with live /v1/models discovery",
+  "categories": ["models"],
+  "activation": { "onStartup": false },
+  "enabledByDefault": false,
+  "providers": ["soclaas"],
+  "modelCatalog": {
+    "discovery": { "soclaas": "runtime" }
+  },
+  "setup": {
+    "providers": [{ "id": "soclaas", "envVars": ["SOCLAAS_API_KEY"] }]
+  },
+  "providerAuthChoices": [
+    {
+      "provider": "soclaas",
+      "method": "api-key",
+      "choiceId": "soclaas-api-key",
+      "choiceLabel": "SoCLaaS API key",
+      "choiceHint": "NUS SoC LLM gateway",
+      "groupId": "soclaas",
+      "groupLabel": "SoCLaaS",
+      "groupHint": "NUS School of Computing LLM gateway",
+      "optionKey": "soclaasApiKey",
+      "cliFlag": "--soclaas-api-key",
+      "cliOption": "--soclaas-api-key <key>",
+      "cliDescription": "SoCLaaS API key",
+      "onboardingScopes": ["text-inference"]
+    }
+  ],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}

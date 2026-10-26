@@ -1,0 +1,70 @@
+{
+  "name": "@lzs/soclaas-provider",
+  "version": "0.1.0",
+  "description": "OpenClaw provider plugin for the SoCLaaS gateway with live model discovery.",
+  "type": "module",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "defaults.js",
+    "auth-options.js",
+    "catalog-fallback.js",
+    "project-rows.js",
+    "openclaw.plugin.json",
+    "README.md",
+    "CHANGELOG.md",
+    "SECURITY.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "check": "node --check index.js && node --check defaults.js && node --check auth-options.js && node --check catalog-fallback.js && node --check project-rows.js",
+    "test": "node --test",
+    "release:check": "npm run check && npm test && npm pack --dry-run"
+  },
+  "engines": {
+    "node": ">=24.22.1 <25 || >=26.12.1"
+  },
+  "peerDependencies": {
+    "openclaw": ">=2026.10.7"
+  },
+  "keywords": [
+    "openclaw",
+    "openclaw-plugin",
+    "soclaas",
+    "nus",
+    "llm",
+    "provider",
+    "openai-compatible",
+    "model-provider"
+  ],
+  "author": {
+    "name": "Lai Zit Seng",
+    "email": "lzs@zitseng.com",
+    "url": "https://github.com/lzs"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lzs/soclaas-provider.git"
+  },
+  "homepage": "https://github.com/lzs/soclaas-provider#readme",
+  "bugs": {
+    "url": "https://github.com/lzs/soclaas-provider/issues"
+  },
+  "openclaw": {
+    "extensions": ["./index.js"],
+    "compat": {
+      "pluginApi": ">=2026.10.7",
+      "minGatewayVersion": "2026.10.7"
+    },
+    "build": {
+      "openclawVersion": "2026.10.7",
+      "pluginSdkVersion": "2026.10.7"
+    },
+    "install": {
+      "clawhubSpec": "@lzs/soclaas-provider",
+      "defaultChoice": "clawhub",
+      "minHostVersion": ">=2026.10.7"
+    }
+  }
+}
