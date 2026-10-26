@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.1.1] - 2026-10-26
+
+### Fixed
+
+- Retried publication with a fresh ClawHub release after the `0.1.0` attempt
+  remained stuck in `pending_checks` despite a clean security scan.
+
 ## [0.1.0] - 2026-10-26
 
 ### Added
