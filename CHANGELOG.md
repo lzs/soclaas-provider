@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.1.2] - 2026-10-27
+
+### Fixed
+
+- Project SoCLaaS `reasoning.supported_efforts` into OpenClaw model compatibility
+  metadata. Unsupported thinking levels are hidden, `off` maps to the gateway's
+  `none`, and advanced levels such as `xhigh` and `max` are exposed only when
+  advertised.
+
+### Changed
+
+- Documented ClawHub capability consent, fresh-install model defaults
+  (`soclaas/default`), and troubleshooting for plugin-backed model resolution.
+
 ## [0.1.1] - 2026-10-26
 
 ### Fixed

@@ -1,6 +1,6 @@
 {
   "name": "@lzs/soclaas-provider",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "OpenClaw provider plugin for the SoCLaaS gateway with live model discovery.",
   "type": "module",
   "main": "index.js",
