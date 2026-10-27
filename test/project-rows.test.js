@@ -86,6 +86,87 @@ test("maps vendor metadata to the OpenClaw model shape", () => {
   });
 });
 
+test("projects supported reasoning efforts and hides unsupported levels", () => {
+  const [model] = projectSoCLaaSRows(
+    [
+      {
+        id: "x-test-2",
+        reasoning: { supported_efforts: ["max", "high", "low", "none"] },
+        supported_parameters: ["reasoning", "reasoning_effort"],
+        soclaas: { capabilities: ["chat"] },
+      },
+    ],
+    noFallback,
+  );
+
+  assert.equal(model.reasoning, true);
+  assert.equal(model.compat.supportsReasoningEffort, true);
+  assert.deepEqual(model.compat.supportedReasoningEfforts, [
+    "max",
+    "high",
+    "low",
+    "none",
+  ]);
+  assert.equal(model.compat.reasoningEffortMap.off, "none");
+  assert.deepEqual(model.thinkingLevelMap, {
+    minimal: null,
+    medium: null,
+    xhigh: null,
+    adaptive: null,
+  });
+});
+
+test("normalizes and deduplicates supported reasoning efforts", () => {
+  const [model] = projectSoCLaaSRows(
+    [
+      {
+        id: "reasoning-model",
+        reasoning: {
+          supported_efforts: [" HIGH ", "low", "high", "NONE", ""],
+        },
+      },
+    ],
+    noFallback,
+  );
+
+  assert.deepEqual(model.compat.supportedReasoningEfforts, [
+    "high",
+    "low",
+    "none",
+  ]);
+});
+
+test("keeps off available when the gateway omits none", () => {
+  const [model] = projectSoCLaaSRows(
+    [
+      {
+        id: "reasoning-model",
+        reasoning: { supported_efforts: ["low", "high", "max"] },
+      },
+    ],
+    noFallback,
+  );
+
+  assert.equal(model.compat.reasoningEffortMap, undefined);
+  assert.deepEqual(model.thinkingLevelMap, {
+    minimal: null,
+    medium: null,
+    xhigh: null,
+    adaptive: null,
+  });
+});
+
+test("does not add thinking metadata when efforts are absent", () => {
+  const [model] = projectSoCLaaSRows(
+    [{ id: "reasoning-model", reasoning: {} }],
+    noFallback,
+  );
+
+  assert.equal(model.reasoning, true);
+  assert.equal(model.compat, undefined);
+  assert.equal(model.thinkingLevelMap, undefined);
+});
+
 test("keeps text first and deduplicates input modalities", () => {
   const [model] = projectSoCLaaSRows(
     [

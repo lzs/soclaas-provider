@@ -86,6 +86,63 @@ function readInputModalities(row, meta) {
   );
 }
 
+const ENABLED_THINKING_LEVELS = [
+  "minimal",
+  "low",
+  "medium",
+  "high",
+  "xhigh",
+  "adaptive",
+  "max",
+];
+
+function readSupportedReasoningEfforts(reasoning) {
+  if (!reasoning || typeof reasoning !== "object") return undefined;
+  const values = reasoning.supported_efforts ?? reasoning.supportedEfforts;
+  if (!Array.isArray(values)) return undefined;
+
+  const efforts = values
+    .filter((entry) => typeof entry === "string")
+    .map((entry) => entry.trim().toLowerCase())
+    .filter(Boolean);
+
+  return efforts.length > 0 ? [...new Set(efforts)] : undefined;
+}
+
+function buildReasoningMetadata(supportedEfforts, known) {
+  const compat = { ...(known?.compat ?? {}) };
+  const thinkingLevelMap = { ...(known?.thinkingLevelMap ?? {}) };
+
+  if (!supportedEfforts?.length) {
+    return {
+      ...(Object.keys(compat).length > 0 ? { compat } : {}),
+      ...(Object.keys(thinkingLevelMap).length > 0 ? { thinkingLevelMap } : {}),
+    };
+  }
+
+  const supportedLevels = new Set(
+    supportedEfforts.map((effort) => (effort === "none" ? "off" : effort)),
+  );
+
+  for (const level of ENABLED_THINKING_LEVELS) {
+    if (!supportedLevels.has(level)) thinkingLevelMap[level] = null;
+  }
+
+  compat.supportsReasoningEffort = true;
+  compat.supportedReasoningEfforts = supportedEfforts;
+  if (supportedLevels.has("off")) {
+    compat.reasoningEffortMap = {
+      ...(known?.compat?.reasoningEffortMap ?? {}),
+      off: "none",
+    };
+  }
+
+  return {
+    compat,
+    ...(Object.keys(thinkingLevelMap).length > 0 ? { thinkingLevelMap } : {}),
+  };
+}
+
 function projectRow(row, fallback) {
   if (!row || typeof row !== "object") return undefined;
 
@@ -139,8 +196,18 @@ function projectRow(row, fallback) {
   // Reasoning: prefer what the live row advertises, and only fall back to the
   // seed's hint. This keeps a conservative placeholder seed from suppressing
   // real capability on a discovered row.
+  const rowReasoning = row?.reasoning;
+  const reasoningMetadata =
+    rowReasoning && typeof rowReasoning === "object" ? rowReasoning : undefined;
+  const supportedEfforts = readSupportedReasoningEfforts(reasoningMetadata);
   const liveReasoning =
-    typeof meta?.reasoning === "boolean" ? meta.reasoning : undefined;
+    typeof meta?.reasoning === "boolean"
+      ? meta.reasoning
+      : typeof rowReasoning === "boolean"
+        ? rowReasoning
+        : reasoningMetadata
+          ? true
+          : undefined;
   const featureNames = Array.isArray(row.supported_parameters)
     ? row.supported_parameters
     : [];
@@ -156,8 +223,7 @@ function projectRow(row, fallback) {
     cost,
     contextWindow,
     maxTokens,
-    ...known?.compat ? { compat: known.compat } : {},
-    ...known?.thinkingLevelMap ? { thinkingLevelMap: known.thinkingLevelMap } : {},
+    ...buildReasoningMetadata(supportedEfforts, known),
   };
 }
 
