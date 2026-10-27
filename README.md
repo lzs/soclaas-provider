@@ -29,13 +29,15 @@ metadata changes do not require config edits.
 ### From ClawHub
 
 ```bash
-openclaw plugins install clawhub:@lzs/soclaas-provider
+openclaw plugins install clawhub:@lzs/soclaas-provider --accept-capabilities
 openclaw plugins enable soclaas-provider --accept-capabilities
 ```
 
 The package name is `@lzs/soclaas-provider`; the plugin id remains
 `soclaas-provider`. Installing a plugin does not enable it, so both commands are
-required.
+required. `--accept-capabilities` approves the plugin's declared capability
+surface (here, the `soclaas` text-inference provider) and is required for
+noninteractive installs. Interactive installs prompt for the same consent.
 
 ### From a local checkout
 
@@ -100,10 +102,28 @@ This behavior is applied by `models auth login` and `onboard`.
 `openclaw models auth paste-api-key` bypasses the provider auth method and does
 not apply the default.
 
+On a fresh install, `soclaas/default` is the recommended primary and image
+model. The plugin sets it as primary during authentication when no primary is
+configured, but it does not set `agents.defaults.imageModel`. To configure both
+explicitly:
+
+```bash
+openclaw models set soclaas/default
+openclaw config set agents.defaults.imageModel.primary soclaas/default
+```
+
+If you do not need a separate image model, leave `agents.defaults.imageModel`
+unset; OpenClaw inherits the primary where applicable.
+
 ## Use
 
 ```bash
 openclaw models list --provider soclaas --refresh
+
+# Stable default alias
+openclaw models set soclaas/default
+
+# Or a specific discovered model
 openclaw models set soclaas/<model-id>
 ```
 
@@ -191,6 +211,25 @@ openclaw config unset models.providers.soclaas
 openclaw models list --provider soclaas --refresh
 ```
 
+### `Unknown model: soclaas/...` with a `models.providers` hint
+
+This is OpenClaw's generic fallback hint when a model is missing from the
+runtime catalog. It does not mean the plugin needs a static provider block. Do
+not add `models.providers.soclaas`; it competes with the plugin-owned catalog.
+
+Confirm the plugin is loaded in the same Gateway that serves the request, then
+refresh and reload:
+
+```bash
+openclaw plugins inspect soclaas-provider --runtime
+openclaw models list --provider soclaas --refresh
+openclaw gateway call models.list --params '{"refresh":true}'
+openclaw plugins reload soclaas-provider
+```
+
+If the CLI sees the model but the Control UI does not, use the picker Refresh
+action.
+
 ### `Plugin not found: soclaas-provider`
 
 The plugin is not installed or is outside the directories OpenClaw scans.
@@ -198,6 +237,13 @@ The plugin is not installed or is outside the directories OpenClaw scans.
 ```bash
 openclaw plugins list
 ```
+
+### `provenance-invalid` warning after install
+
+This is expected for a community-channel ClawHub package. It means OpenClaw
+cannot treat the install as trusted-official; it does not block provider
+registration, authentication, or model discovery. Trusted-only runtime
+capabilities would require the official channel.
 
 ### `openclaw plugins validate` mention of missing tool metadata
 
@@ -232,7 +278,9 @@ clawhub package publish . \
 ```
 
 Remove `--dry-run` to publish. Releases remain pending until ClawHub security
-checks pass.
+checks pass. ClawHub serves the README and package contents from the published
+artifact, so documentation changes become visible on the listing only after
+publishing a new version. Bump the `package.json` version before publishing.
 
 ## Files
 
