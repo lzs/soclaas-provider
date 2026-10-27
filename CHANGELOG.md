@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.1.3] - 2026-10-27
+
+### Added
+
+- Register `bge-m3` as a memory-search embedding provider.
+- Verify the embedding model is present in `/v1/models` and advertises the
+  `embeddings` capability before use.
+
 ## [0.1.2] - 2026-10-27
 
 ### Fixed

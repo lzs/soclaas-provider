@@ -1,6 +1,6 @@
 {
   "name": "@lzs/soclaas-provider",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "OpenClaw provider plugin for the SoCLaaS gateway with live model discovery.",
   "type": "module",
   "main": "index.js",
@@ -9,6 +9,7 @@
     "defaults.js",
     "auth-options.js",
     "catalog-fallback.js",
+    "embedding.js",
     "project-rows.js",
     "openclaw.plugin.json",
     "README.md",
@@ -17,7 +18,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "check": "node --check index.js && node --check defaults.js && node --check auth-options.js && node --check catalog-fallback.js && node --check project-rows.js",
+    "check": "node --check index.js && node --check defaults.js && node --check auth-options.js && node --check catalog-fallback.js && node --check embedding.js && node --check project-rows.js",
     "test": "node --test",
     "release:check": "npm run check && npm test && npm pack --dry-run"
   },

@@ -7,6 +7,8 @@ metadata changes do not require config edits.
 ## Features
 
 - Registers the `soclaas` provider with the SoCLaaS base URL.
+- Registers `bge-m3` for memory-search embeddings after confirming it is
+  advertised by `/v1/models`.
 - Discovers chat models on demand and caches the result for 60 seconds.
 - Publishes display names, context limits, pricing, reasoning support, and input
   modalities from the gateway's vendor metadata.
@@ -115,6 +117,30 @@ openclaw config set agents.defaults.imageModel.primary soclaas/default
 If you do not need a separate image model, leave `agents.defaults.imageModel`
 unset; OpenClaw inherits the primary where applicable.
 
+### Memory search
+
+The plugin registers `bge-m3` for OpenClaw memory embeddings. Before creating
+the provider, it confirms that `bge-m3` is present in `/v1/models` and advertises
+the `embeddings` capability.
+
+```json5
+{
+  memory: {
+    search: {
+      provider: "soclaas",
+      model: "bge-m3",
+    },
+  },
+}
+```
+
+The embedding provider reuses the existing SoCLaaS auth profile. After switching
+embedding providers or models, rebuild the memory index:
+
+```bash
+openclaw memory status --index --agent main
+```
+
 ## Use
 
 ```bash
@@ -177,6 +203,7 @@ live in the plugin source:
 - `BASE_URL` and `SEED_MODELS` in `index.js`
 - `DEFAULT_MODEL_ID` and `DEFAULT_MODEL_REF` in `defaults.js`
 - Auth default-model behavior in `auth-options.js`
+- Embedding provider and `bge-m3` verification in `embedding.js`
 - Model filtering and metadata mapping in `project-rows.js`
 - Last-known-good fallback behavior in `catalog-fallback.js`
 
@@ -292,6 +319,7 @@ soclaas-provider/
 ├── defaults.js            # Provider and default-model constants
 ├── auth-options.js        # Auth method options and default-model selection
 ├── catalog-fallback.js    # Fallback for failed live discovery
+├── embedding.js           # bge-m3 memory embedding provider
 ├── project-rows.js        # Vendor metadata projection
 ├── test/                  # Unit tests
 ├── CHANGELOG.md

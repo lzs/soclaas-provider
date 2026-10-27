@@ -6,6 +6,9 @@
   "activation": { "onStartup": false },
   "enabledByDefault": false,
   "providers": ["soclaas"],
+  "contracts": {
+    "embeddingProviders": ["soclaas"]
+  },
   "modelCatalog": {
     "discovery": { "soclaas": "runtime" }
   },

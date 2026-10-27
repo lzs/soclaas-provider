@@ -3,7 +3,12 @@ import { createProviderApiKeyAuthMethod } from "openclaw/plugin-sdk/provider-aut
 import { buildOpenAICompatibleProviderCatalog } from "openclaw/plugin-sdk/provider-catalog-live-runtime";
 import { buildAuthMethodOptions } from "./auth-options.js";
 import { withCatalogFallback } from "./catalog-fallback.js";
-import { DEFAULT_MODEL_ID, PROVIDER_ID } from "./defaults.js";
+import {
+  DEFAULT_EMBEDDING_MODEL_ID,
+  DEFAULT_MODEL_ID,
+  PROVIDER_ID,
+} from "./defaults.js";
+import { createSoCLaaSEmbeddingProvider } from "./embedding.js";
 import { projectSoCLaaSRows } from "./project-rows.js";
 
 const BASE_URL = "https://soclaas-api.comp.nus.edu.sg/v1";
@@ -106,6 +111,24 @@ export default definePluginEntry({
       staticCatalog: {
         order: "simple",
         run: async () => ({ provider: buildSoCLaaSProvider() }),
+      },
+    });
+
+    api.registerEmbeddingProvider({
+      id: PROVIDER_ID,
+      defaultModel: DEFAULT_EMBEDDING_MODEL_ID,
+      transport: "remote",
+      authProviderId: PROVIDER_ID,
+      create: async (options) => {
+        const auth = await api.runtime.modelAuth.resolveApiKeyForProvider({
+          provider: PROVIDER_ID,
+          cfg: options.config,
+        });
+        return createSoCLaaSEmbeddingProvider({
+          apiKey: auth?.apiKey,
+          baseUrl: options.remote?.baseUrl ?? BASE_URL,
+          model: options.model ?? DEFAULT_EMBEDDING_MODEL_ID,
+        });
       },
     });
   },
