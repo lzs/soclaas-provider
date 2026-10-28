@@ -2,10 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createSoCLaaSEmbeddingProvider } from "../embedding.js";
 
-function jsonResponse(body, status = 200) {
+function jsonResponse(body, status = 200, headers = {}) {
   return {
     ok: status >= 200 && status < 300,
     status,
+    headers: { get: (name) => headers[name.toLowerCase()] ?? null },
     json: async () => body,
     text: async () => JSON.stringify(body),
   };
@@ -153,4 +154,61 @@ test("rejects a vector count mismatch", async () => {
     () => result.provider.embedBatch(["a", "b"]),
     /returned 1 vectors for 2 inputs/,
   );
+});
+
+test("retries rate-limited embedding requests", async () => {
+  let attempts = 0;
+  const fetchImpl = async (url, init) => {
+    if (url.endsWith("/models")) return modelResponse();
+    attempts += 1;
+    if (attempts === 1) {
+      return jsonResponse({ error: "rate limit exceeded" }, 429);
+    }
+    const body = JSON.parse(init.body);
+    return jsonResponse({
+      data: body.input.map((_, index) => ({ index, embedding: [1] })),
+    });
+  };
+
+  const result = await createSoCLaaSEmbeddingProvider({
+    apiKey: "test-key",
+    baseUrl: "https://embedding.test/retry/v1",
+    fetchImpl,
+    retryBaseDelayMs: 1,
+  });
+
+  assert.deepEqual(await result.provider.embed("hello"), [1]);
+  assert.equal(attempts, 2);
+});
+
+test("limits concurrent embedding requests", async () => {
+  let active = 0;
+  let maxActive = 0;
+  const fetchImpl = async (url, init) => {
+    if (url.endsWith("/models")) return modelResponse();
+    active += 1;
+    maxActive = Math.max(maxActive, active);
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    active -= 1;
+    const body = JSON.parse(init.body);
+    return jsonResponse({
+      data: body.input.map((_, index) => ({ index, embedding: [1] })),
+    });
+  };
+
+  const result = await createSoCLaaSEmbeddingProvider({
+    apiKey: "test-key",
+    baseUrl: "https://embedding.test/concurrency/v1",
+    fetchImpl,
+    maxConcurrentRequests: 2,
+    retryBaseDelayMs: 1,
+  });
+
+  await Promise.all(
+    Array.from({ length: 6 }, (_, index) =>
+      result.provider.embed(`input-${index}`),
+    ),
+  );
+
+  assert.equal(maxActive, 2);
 });

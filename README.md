@@ -134,7 +134,8 @@ the `embeddings` capability.
 }
 ```
 
-The embedding provider reuses the existing SoCLaaS auth profile. After switching
+The embedding provider reuses the existing SoCLaaS auth profile, limits
+concurrent requests, and retries transient upstream failures. After switching
 embedding providers or models, rebuild the memory index:
 
 ```bash
