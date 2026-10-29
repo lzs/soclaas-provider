@@ -1,6 +1,6 @@
 # SoCLaaS Provider for OpenClaw
 
-Registers the SoCLaaS OpenAI-compatible gateway as an OpenClaw model provider.
+Registers the [SoCLaaS](https://soclaas.comp.nus.edu.sg) OpenAI-compatible gateway as an OpenClaw model provider.
 Models are discovered from `GET /v1/models` at runtime, so gateway additions and
 metadata changes do not require config edits.
 
@@ -40,6 +40,27 @@ The package name is `@lzs/soclaas-provider`; the plugin id remains
 required. `--accept-capabilities` approves the plugin's declared capability
 surface (here, the `soclaas` text-inference provider) and is required for
 noninteractive installs. Interactive installs prompt for the same consent.
+
+### From GitHub
+
+Install directly from the public repository:
+
+```bash
+openclaw plugins install git:github.com/lzs/soclaas-provider@v0.1.4 \
+  --force --accept-capabilities
+openclaw plugins enable soclaas-provider --accept-capabilities
+```
+
+Replace `v0.1.4` with the release tag or commit SHA you want to run. Pinning to
+a tag or commit keeps installs reproducible; `@main` follows the latest source
+but can change without warning. Git sources are outside ClawHub review, so
+noninteractive installs require `--force`. The plugin id remains
+`soclaas-provider`. To update a git install, reinstall with the new ref:
+
+```bash
+openclaw plugins install git:github.com/lzs/soclaas-provider@<new-ref> \
+  --force --accept-capabilities
+```
 
 ### From a local checkout
 
@@ -268,9 +289,9 @@ openclaw plugins list
 
 ### `provenance-invalid` warning after install
 
-This is expected for a community-channel ClawHub package. It means OpenClaw
-cannot treat the install as trusted-official; it does not block provider
-registration, authentication, or model discovery. Trusted-only runtime
+This is expected for a community-channel ClawHub package or a git install. It
+means OpenClaw cannot treat the install as trusted-official; it does not block
+provider registration, authentication, or model discovery. Trusted-only runtime
 capabilities would require the official channel.
 
 ### `openclaw plugins validate` mention of missing tool metadata
